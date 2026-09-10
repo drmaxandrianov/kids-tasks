@@ -1,24 +1,19 @@
 import { useState } from 'react';
-import { User } from '../types';
-import { authenticate } from '../store';
+import { useApp } from '../AppContext';
 import { LogIn } from 'lucide-react';
 
-interface Props {
-  onLogin: (user: User) => void;
-}
-
-export default function LoginPage({ onLogin }: Props) {
-  const [login, setLogin] = useState('');
+export default function LoginPage() {
+  const { login } = useApp();
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const user = authenticate(login, password);
-    if (user) {
-      onLogin(user);
-    } else {
+    
+    const user = login(username, password);
+    if (!user) {
       setError('Неверный логин или пароль');
     }
   };
@@ -37,8 +32,8 @@ export default function LoginPage({ onLogin }: Props) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Логин</label>
             <input
               type="text"
-              value={login}
-              onChange={(e) => setLogin(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 outline-none transition"
               placeholder="Введите логин"
             />

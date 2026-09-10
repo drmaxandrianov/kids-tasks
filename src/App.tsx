@@ -1,46 +1,55 @@
-import { useState, useEffect } from 'react';
-import { User } from './types';
-import { getCurrentUser, setCurrentUser, initializeStore } from './store';
+import { AppProvider, useApp } from './AppContext';
 import LoginPage from './components/LoginPage';
 import ParentDashboard from './components/ParentDashboard';
 import ChildScreen from './components/ChildScreen';
 
-export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loaded, setLoaded] = useState(false);
+function AppContent() {
+  const { currentUser, loading, error } = useApp();
 
-  useEffect(() => {
-    initializeStore();
-    const saved = getCurrentUser();
-    if (saved) setUser(saved);
-    setLoaded(true);
-  }, []);
-
-  const handleLogin = (loggedUser: User) => {
-    setUser(loggedUser);
-    setCurrentUser(loggedUser);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setCurrentUser(null);
-  };
-
-  if (!loaded) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100">
-        <div className="animate-pulse text-2xl text-purple-600">Загрузка...</div>
+        <div className="text-center">
+          <div className="text-5xl mb-4 animate-pulse">📚</div>
+          <div className="text-xl text-purple-600">Загрузка...</div>
+        </div>
       </div>
     );
   }
 
-  if (!user) {
-    return <LoginPage onLogin={handleLogin} />;
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 to-orange-50 p-4">
+        <div className="bg-white rounded-2xl p-8 max-w-md text-center shadow-xl">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Ошибка подключения</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-purple-500 text-white px-6 py-2 rounded-xl hover:bg-purple-600 transition"
+          >
+            Попробовать снова
+          </button>
+        </div>
+      </div>
+    );
   }
 
-  if (user.role === 'parent') {
-    return <ParentDashboard user={user} onLogout={handleLogout} />;
+  if (!currentUser) {
+    return <LoginPage />;
   }
 
-  return <ChildScreen user={user} onLogout={handleLogout} />;
+  if (currentUser.role === 'parent') {
+    return <ParentDashboard />;
+  }
+
+  return <ChildScreen />;
+}
+
+export default function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
+  );
 }
