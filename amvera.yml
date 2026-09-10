@@ -1,0 +1,8 @@
+version: 1
+
+build:
+  artifacts:
+    dist/*: /
+
+run:
+  command: node server.js
